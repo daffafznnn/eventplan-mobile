@@ -19,18 +19,6 @@ class HomeView extends GetView<HomeController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('HomeView eventplan'),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            onPressed: () {
-              logout();
-            },
-            icon: Icon(Icons.logout),
-          ),
-        ],
-      ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
