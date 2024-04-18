@@ -1,23 +1,42 @@
+import 'dart:convert';
 import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
+import 'package:eventplan_mobile/app/data/categories_model.dart';
+import '../../../providers/api.dart';
 
 class HomeController extends GetxController {
-  //TODO: Implement HomeController
+  var categoryList = <Category>[].obs;
 
-  final count = 0.obs;
   @override
   void onInit() {
+    fetchCategories();
     super.onInit();
   }
 
-  @override
-  void onReady() {
-    super.onReady();
-  }
+  Future<void> fetchCategories() async {
+    try {
+      var apiUrl = '${Api.baseUrl}/event-categories';
+      var headers = await Api.getHeaders();
 
-  @override
-  void onClose() {
-    super.onClose();
-  }
+      var response = await http.get(
+        Uri.parse(apiUrl),
+        headers: headers,
+      );
 
-  void increment() => count.value++;
+      if (response.statusCode == 200) {
+        List<dynamic> jsonResponse = json.decode(response.body);
+        categoryList.assignAll(
+          jsonResponse
+              .map(
+                (model) => Category.fromJson(model as Map<String, dynamic>),
+              )
+              .toList(),
+        );
+      } else {
+        throw Exception('Failed to fetch categories');
+      }
+    } catch (e) {
+      print('Error while fetching categories: $e');
+    }
+  }
 }

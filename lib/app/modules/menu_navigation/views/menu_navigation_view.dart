@@ -28,8 +28,6 @@ class MenuNavigationView extends StatelessWidget {
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20), // Rounded border
-                  color:
-                      Colors.grey[100], // Warna abu untuk latar belakang input
                   border: Border.all(
                     color: Colors.grey[400]!, // Warna border atau stroke
                     width: 1.0, // Lebar border atau stroke
@@ -59,6 +57,38 @@ class MenuNavigationView extends StatelessWidget {
                     ),
                   ],
                 ),
+              ),
+            ),
+            IconButton(
+              onPressed: () {
+                // Logika untuk menampilkan notifikasi
+              },
+              icon: Stack(
+                children: [
+                  Icon(Icons.notifications),
+                  Positioned(
+                    right: 0,
+                    child: Container(
+                      padding: EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.red,
+                      ),
+                      constraints: BoxConstraints(
+                        minWidth: 16,
+                        minHeight: 16,
+                      ),
+                      child: Text(
+                        '1',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],

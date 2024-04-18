@@ -1,4 +1,5 @@
 import 'package:eventplan_mobile/app/modules/auth/controllers/auth_controller.dart';
+import 'package:eventplan_mobile/app/modules/home/controllers/home_controller.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
@@ -16,4 +17,5 @@ void main() {
   );
   Get.put(AuthController());
   Get.put(MenuController());
+  Get.put(HomeController());
 }
