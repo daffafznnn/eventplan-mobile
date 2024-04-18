@@ -1,0 +1,30 @@
+name: eventplan_mobile
+version: 1.0.0+1
+publish_to: none
+description: A new Flutter project.
+environment: 
+  sdk: '>=3.2.4 <4.0.0'
+
+dependencies: 
+  cupertino_icons: ^1.0.2
+  get: 4.6.6
+  flutter: 
+    sdk: flutter
+  http: ^1.2.0
+  shared_preferences: ^2.2.3
+  animated_bottom_navigation_bar: ^1.3.3
+
+dev_dependencies: 
+  flutter_lints: ^2.0.0
+  flutter_test: 
+    sdk: flutter
+
+flutter: 
+  uses-material-design: true
+
+
+  assets:
+    - assets/ # Menambahkan seluruh folder assets
+    # - assets/images/ # Jika ingin menambahkan folder tertentu
+    # - assets/fonts/  # Jika ingin menambahkan folder tertentu
+    # - assets/data/   # Jika ingin menambahkan folder tertentu
