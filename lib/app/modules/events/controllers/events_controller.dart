@@ -6,10 +6,11 @@ import '../../../providers/api.dart';
 
 class EventsController extends GetxController {
   var eventList = <Events>[].obs;
+  var isLoading = true.obs;
 
   @override
   void onInit() {
-    fetchEvents();
+    fetchEvents(); // Panggil fetchEvents di onInit
     super.onInit();
   }
 
@@ -25,18 +26,25 @@ class EventsController extends GetxController {
 
       if (response.statusCode == 200) {
         List<dynamic> jsonResponse = json.decode(response.body);
-        eventList.assignAll(
-          jsonResponse
-              .map(
-                (model) => Events.fromJson(model as Map<String, dynamic>),
-              )
-              .toList(),
-        );
+        if (jsonResponse.isEmpty) {
+          // Jika data event kosong
+          print('No events found');
+        } else {
+          eventList.assignAll(
+            jsonResponse
+                .map(
+                  (model) => Events.fromJson(model as Map<String, dynamic>),
+                )
+                .toList(),
+          );
+        }
       } else {
         throw Exception('Failed to fetch events');
       }
     } catch (e) {
       print('Error while fetching events: $e');
+    } finally {
+      isLoading.value = false;
     }
   }
 }

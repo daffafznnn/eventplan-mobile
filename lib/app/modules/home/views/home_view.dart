@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:shimmer/shimmer.dart'; // Import package shimmer
 
 import '../controllers/home_controller.dart';
-import '../../auth/controllers/auth_controller.dart'; // Impor AuthController
+import '../../auth/controllers/auth_controller.dart';
 import 'dart:math';
-
+import 'package:eventplan_mobile/app/modules/events/controllers/events_controller.dart';
+import 'package:eventplan_mobile/app/data/event_model.dart';
 
 class HomeView extends GetView<HomeController> {
   HomeView({Key? key}) : super(key: key);
@@ -23,7 +25,7 @@ class HomeView extends GetView<HomeController> {
     return Scaffold(
       body: SingleChildScrollView(
         child: Container(
-          color: Colors.lightBlue[100], // Warna background biru muda
+          color: Colors.lightBlue[100],
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -35,13 +37,13 @@ class HomeView extends GetView<HomeController> {
                   margin: EdgeInsets.symmetric(horizontal: 16.0),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(20.0), // Rounded border
+                    borderRadius: BorderRadius.circular(20.0),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.grey.withOpacity(0.5),
                         spreadRadius: 2,
                         blurRadius: 5,
-                        offset: Offset(0, 2), // changes position of shadow
+                        offset: Offset(0, 2),
                       ),
                     ],
                   ),
@@ -50,13 +52,11 @@ class HomeView extends GetView<HomeController> {
                     shrinkWrap: true,
                     physics: NeverScrollableScrollPhysics(),
                     children: List.generate(
-                      min(controller.categoryList.length,
-                          6), // Menampilkan 6 kategori pertama
+                      min(controller.categoryList.length, 6),
                       (index) => CategoryItem(
                         icon: getIconFromCategoryName(
                             controller.categoryList[index].category ?? ''),
-                        title: controller.categoryList[index].category ??
-                            '', // Jika null, gunakan string kosong
+                        title: controller.categoryList[index].category ?? '',
                       ),
                     ),
                   ),
@@ -70,31 +70,45 @@ class HomeView extends GetView<HomeController> {
                     topLeft: Radius.circular(20.0),
                     topRight: Radius.circular(20.0),
                   ),
-                ), // Warna background putih
-                padding: EdgeInsets.all(16.0), // Padding untuk teks
+                ),
+                padding: EdgeInsets.all(16.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Popular Events',
                       style: TextStyle(
-                          fontSize: 24.0, fontWeight: FontWeight.bold),
+                        fontSize: 24.0,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     SizedBox(height: 20.0),
-                    Column(
-                      children: List.generate(
-                        10, // Ganti dengan jumlah kartu yang diinginkan
-                        (index) => Card(
-                          margin: EdgeInsets.symmetric(
-                              horizontal: 16.0, vertical: 8.0),
-                          child: Container(
-                            height:
-                                100.0, // Atur ketinggian kartu sesuai kebutuhan
-                            width: double.infinity,
-                            // Isi kartu kosong di sini
-                          ),
-                        ),
-                      ),
+                    // Gunakan Obx untuk memantau eventList dan isLoading
+                    Obx(
+                      () {
+                        final eventList =
+                            Get.find<EventsController>().eventList;
+                        final isLoading =
+                            Get.find<EventsController>().isLoading;
+
+                        if (isLoading.value) {
+                          // Jika sedang loading, tampilkan shimmer
+                          return ShimmerLoadingList();
+                        } else if (eventList.isEmpty) {
+                          // Jika tidak ada acara ditemukan, tampilkan pesan
+                          return Center(
+                            child: Text('No events found'),
+                          );
+                        } else {
+                          // Jika ada acara, tampilkan daftar acara
+                          return Column(
+                            children: eventList
+                                .take(6)
+                                .map((event) => EventCard(event: event))
+                                .toList(),
+                          );
+                        }
+                      },
                     ),
                   ],
                 ),
@@ -102,6 +116,127 @@ class HomeView extends GetView<HomeController> {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class EventCard extends StatelessWidget {
+  final Events event;
+
+  const EventCard({required this.event});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.symmetric(vertical: 8.0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20.0),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.5),
+            spreadRadius: 2,
+            blurRadius: 5,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Stack(
+            children: [
+              InkWell(
+                onTap: () {
+                  // Handle onTap
+                },
+                child: ClipRRect(
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(20.0),
+                    topRight: Radius.circular(20.0),
+                  ),
+                  child: Image.network(
+                    event.url ?? '', // Use image instead of url
+                    height: 200.0,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+              Positioned(
+                top: 0,
+                right: 0,
+                child: Container(
+                  padding: EdgeInsets.symmetric(vertical: 2.0, horizontal: 6.0),
+                  decoration: BoxDecoration(
+                    color: Colors.blue[300],
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(10.0),
+                      topRight: Radius.circular(20.0),
+                    ),
+                  ),
+                  child: Text(
+                    event.price == 0 ? "Free" : "Paid",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                bottom: 0,
+                right: 0,
+                child: IconButton(
+                  icon: Icon(
+                    Icons.favorite_border,
+                    color: Colors.grey,
+                  ),
+                  onPressed: () {
+                    // Toggle favorite
+                  },
+                ),
+              ),
+            ],
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+              event.title ?? '',
+              style: TextStyle(
+                fontSize: 16.0,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 8.0, right: 8.0, bottom: 8.0),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.calendar_today,
+                  size: 16.0,
+                ),
+                SizedBox(width: 4.0),
+                Text(
+                  event.startDate ?? '',
+                  style: TextStyle(fontSize: 14.0),
+                ),
+                Spacer(),
+                Icon(
+                  Icons.location_on,
+                  size: 16.0,
+                ),
+                SizedBox(width: 4.0),
+                Text(
+                  event.eventLocations?[0].address ?? '',
+                  style: TextStyle(fontSize: 14.0),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -118,7 +253,7 @@ class CategoryItem extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(10.0), // Rounded border
+        borderRadius: BorderRadius.circular(10.0),
         child: Container(
           color: Colors.white,
           child: Material(
@@ -134,8 +269,8 @@ class CategoryItem extends StatelessWidget {
                   children: [
                     Icon(
                       icon,
-                      size: 24.0,
-                      color: Colors.blue, // Icon dengan warna biru
+                      size: 34.0,
+                      color: Colors.blue,
                     ),
                     SizedBox(height: 8.0),
                     Text(
@@ -146,6 +281,72 @@ class CategoryItem extends StatelessWidget {
                   ],
                 ),
               ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class ShimmerLoadingList extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: List.generate(
+        6,
+        (index) => Shimmer.fromColors(
+          baseColor: Colors.grey[300]!,
+          highlightColor: Colors.grey[100]!,
+          child: Container(
+            margin: EdgeInsets.symmetric(vertical: 8.0),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20.0),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.5),
+                  spreadRadius: 2,
+                  blurRadius: 5,
+                  offset: Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: double.infinity,
+                  height: 200.0,
+                  color: Colors.grey[300],
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Container(
+                    width: double.infinity,
+                    height: 16.0,
+                    color: Colors.grey[300],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 8.0, vertical: 4.0),
+                  child: Container(
+                    width: double.infinity,
+                    height: 16.0,
+                    color: Colors.grey[300],
+                  ),
+                ),
+                Padding(
+                  padding:
+                      const EdgeInsets.only(left: 8.0, right: 8.0, bottom: 8.0),
+                  child: Container(
+                    width: double.infinity,
+                    height: 16.0,
+                    color: Colors.grey[300],
+                  ),
+                ),
+              ],
             ),
           ),
         ),
