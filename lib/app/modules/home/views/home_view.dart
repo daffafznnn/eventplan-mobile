@@ -91,14 +91,9 @@ class HomeView extends GetView<HomeController> {
                         final isLoading =
                             Get.find<EventsController>().isLoading;
 
-                        if (isLoading.value) {
+                        if (eventList.isEmpty) {
                           // Jika sedang loading, tampilkan shimmer
                           return ShimmerLoadingList();
-                        } else if (eventList.isEmpty) {
-                          // Jika tidak ada acara ditemukan, tampilkan pesan
-                          return Center(
-                            child: Text('No events found'),
-                          );
                         } else {
                           // Jika ada acara, tampilkan daftar acara
                           return Column(

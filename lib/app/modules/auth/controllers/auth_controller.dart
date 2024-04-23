@@ -6,10 +6,31 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../providers/api.dart';
 
 class AuthController extends GetxController {
- final formKey = GlobalKey<FormState>();
+  final formKey = GlobalKey<FormState>();
 
+  var isLoggedIn = false.obs;
   var identifier = ''.obs;
   var password = ''.obs;
+
+  @override
+  void onInit() {
+    super.onInit();
+    // Perbarui status login berdasarkan keberadaan token di localStorage
+    checkLoginStatus();
+  }
+
+  void checkLoginStatus() async {
+    SharedPreferences localStorage = await SharedPreferences.getInstance();
+    String? token = localStorage.getString('token');
+
+    if (token != null) {
+      // Jika token ditemukan, pengguna dianggap telah login
+      isLoggedIn.value = true;
+    } else {
+      // Jika token tidak ditemukan, pengguna dianggap belum login
+      isLoggedIn.value = false;
+    }
+  }
 
   void onEmailChanged(String value) {
     identifier.value = value;
@@ -38,7 +59,10 @@ class AuthController extends GetxController {
 
   Future<http.Response> _performLogin() async {
     var apiUrl = '/auth/login';
-    var requestBody = {'identifier': identifier.value, 'password': password.value};
+    var requestBody = {
+      'identifier': identifier.value,
+      'password': password.value
+    };
 
     return await http.post(
       Uri.parse(Api.baseUrl + apiUrl),
@@ -51,6 +75,9 @@ class AuthController extends GetxController {
     // Hapus token dari Shared Preferences
     SharedPreferences localStorage = await SharedPreferences.getInstance();
     localStorage.remove('token');
+
+    // Perbarui status login setelah logout
+    isLoggedIn.value = false;
 
     // Redirect ke halaman login setelah logout
     Get.offAllNamed('/auth/login');

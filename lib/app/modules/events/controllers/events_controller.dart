@@ -6,7 +6,7 @@ import '../../../providers/api.dart';
 
 class EventsController extends GetxController {
   var eventList = <Events>[].obs;
-  var isLoading = true.obs;
+  var isLoading = false.obs;
 
   @override
   void onInit() {
