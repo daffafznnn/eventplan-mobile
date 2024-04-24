@@ -8,6 +8,7 @@ abstract class Routes {
   static const MENU_NAVIGATION = _Paths.MENU_NAVIGATION;
   static const PROFILE = _Paths.PROFILE;
   static const EVENTS = _Paths.EVENTS;
+  static const EVENTS_DETAIL = _Paths.EVENTS_DETAIL;
 }
 
 abstract class _Paths {
@@ -17,4 +18,5 @@ abstract class _Paths {
   static const MENU_NAVIGATION = '/';
   static const PROFILE = '/profile';
   static const EVENTS = '/events';
+  static const EVENTS_DETAIL = '/events/detail';
 }

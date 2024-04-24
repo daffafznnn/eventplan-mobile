@@ -1,27 +1,20 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:shimmer/shimmer.dart'; // Import package shimmer
-
-import '../controllers/home_controller.dart';
-import '../../auth/controllers/auth_controller.dart';
-import 'dart:math';
+import 'package:shimmer/shimmer.dart';
 import 'package:eventplan_mobile/app/modules/events/controllers/events_controller.dart';
 import 'package:eventplan_mobile/app/data/event_model.dart';
+import 'package:eventplan_mobile/app/modules/home/controllers/home_controller.dart';
+import 'package:geolocator/geolocator.dart';
 
 class HomeView extends GetView<HomeController> {
   HomeView({Key? key}) : super(key: key);
-
-  void goToLoginPage() {
-    Get.toNamed('/auth/login');
-  }
-
-  void logout() {
-    AuthController authController = Get.find<AuthController>();
-    authController.logout();
-  }
+  
 
   @override
   Widget build(BuildContext context) {
+    final EventsController eventsController = Get.put(EventsController());
+
     return Scaffold(
       body: SingleChildScrollView(
         child: Container(
@@ -31,36 +24,35 @@ class HomeView extends GetView<HomeController> {
             children: [
               Padding(
                 padding: EdgeInsets.all(16.0),
-              ),
-              Obx(
-                () => Container(
-                  margin: EdgeInsets.symmetric(horizontal: 16.0),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20.0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.5),
-                        spreadRadius: 2,
-                        blurRadius: 5,
-                        offset: Offset(0, 2),
+                child: Obx(() => Container(
+                      margin: EdgeInsets.symmetric(horizontal: 16.0),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20.0),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.5),
+                            spreadRadius: 2,
+                            blurRadius: 5,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                  child: GridView.count(
-                    crossAxisCount: 3,
-                    shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    children: List.generate(
-                      min(controller.categoryList.length, 6),
-                      (index) => CategoryItem(
-                        icon: getIconFromCategoryName(
-                            controller.categoryList[index].category ?? ''),
-                        title: controller.categoryList[index].category ?? '',
+                      child: GridView.count(
+                        crossAxisCount: 3,
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        children: List.generate(
+                          min(controller.categoryList.length, 6),
+                          (index) => CategoryItem(
+                            icon: getIconFromCategoryName(
+                                controller.categoryList[index].category ?? ''),
+                            title:
+                                controller.categoryList[index].category ?? '',
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                ),
+                    )),
               ),
               SizedBox(height: 30.0),
               Container(
@@ -83,28 +75,21 @@ class HomeView extends GetView<HomeController> {
                       ),
                     ),
                     SizedBox(height: 20.0),
-                    // Gunakan Obx untuk memantau eventList dan isLoading
-                    Obx(
-                      () {
-                        final eventList =
-                            Get.find<EventsController>().eventList;
-                        final isLoading =
-                            Get.find<EventsController>().isLoading;
+                    Obx(() {
+                      final eventList = eventsController.eventList;
+                      final isLoading = eventsController.isLoading;
 
-                        if (eventList.isEmpty) {
-                          // Jika sedang loading, tampilkan shimmer
-                          return ShimmerLoadingList();
-                        } else {
-                          // Jika ada acara, tampilkan daftar acara
-                          return Column(
-                            children: eventList
-                                .take(6)
-                                .map((event) => EventCard(event: event))
-                                .toList(),
-                          );
-                        }
-                      },
-                    ),
+                      if (isLoading.value) {
+                        return ShimmerLoadingList();
+                      } else {
+                        return Column(
+                          children: eventList
+                              .take(6)
+                              .map((event) => EventCard(event: event))
+                              .toList(),
+                        );
+                      }
+                    }),
                   ],
                 ),
               ),
@@ -144,7 +129,8 @@ class EventCard extends StatelessWidget {
             children: [
               InkWell(
                 onTap: () {
-                  // Handle onTap
+                  EventsController _eventsController = Get.find();
+                  _eventsController.showDetailEvent(event);
                 },
                 child: ClipRRect(
                   borderRadius: BorderRadius.only(
@@ -152,7 +138,7 @@ class EventCard extends StatelessWidget {
                     topRight: Radius.circular(20.0),
                   ),
                   child: Image.network(
-                    event.url ?? '', // Use image instead of url
+                    event.url ?? '',
                     height: 200.0,
                     width: double.infinity,
                     fit: BoxFit.cover,
@@ -207,26 +193,40 @@ class EventCard extends StatelessWidget {
           ),
           Padding(
             padding: const EdgeInsets.only(left: 8.0, right: 8.0, bottom: 8.0),
-            child: Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(
-                  Icons.calendar_today,
-                  size: 16.0,
+                Row(
+                  children: [
+                    Icon(
+                      Icons.calendar_today,
+                      size: 16.0,
+                    ),
+                    SizedBox(width: 4.0),
+                    Expanded(
+                      child: Text(
+                        event.startDate.toString() ?? '',
+                        style: TextStyle(fontSize: 14.0),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
                 ),
-                SizedBox(width: 4.0),
-                Text(
-                  event.startDate ?? '',
-                  style: TextStyle(fontSize: 14.0),
-                ),
-                Spacer(),
-                Icon(
-                  Icons.location_on,
-                  size: 16.0,
-                ),
-                SizedBox(width: 4.0),
-                Text(
-                  event.eventLocations?[0].address ?? '',
-                  style: TextStyle(fontSize: 14.0),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.location_on,
+                      size: 16.0,
+                    ),
+                    SizedBox(width: 4.0),
+                    Expanded(
+                      child: Text(
+                        _getLocationText(event.typeLocation),
+                        style: TextStyle(fontSize: 14.0),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -234,6 +234,23 @@ class EventCard extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  String _getLocationText(String? typeLocation) {
+    if (typeLocation != null) {
+      switch (typeLocation.toLowerCase()) {
+        case "location":
+          return event.eventLocations?[0].address ?? '';
+        case "online":
+          return 'Online';
+        case "tba":
+          return 'To Be Announced';
+        default:
+          return '';
+      }
+    } else {
+      return '';
+    }
   }
 }
 

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../providers/api.dart';
+import 'package:eventplan_mobile/app/modules/profile/controllers/profile_controller.dart';
 
 class AuthController extends GetxController {
   final formKey = GlobalKey<FormState>();
@@ -40,14 +41,17 @@ class AuthController extends GetxController {
     password.value = value;
   }
 
-  Future<void> login() async {
+ Future<void> login() async {
     try {
       var response = await _performLogin();
       var responseBody = json.decode(response.body);
 
       if (response.statusCode == 200 && responseBody['accessToken'] != null) {
         _saveUserData(responseBody);
+        // Panggil fetchUserProfile() dari ProfileController setelah login berhasil
+        Get.find<ProfileController>().fetchUserProfile();
         Get.offAllNamed('/');
+        isLoggedIn.value = true;
       } else {
         Get.snackbar('Error', 'Login failed. ${responseBody['msg']}');
       }
@@ -56,6 +60,7 @@ class AuthController extends GetxController {
       Get.snackbar('Error', 'An error occurred during login. $e');
     }
   }
+
 
   Future<http.Response> _performLogin() async {
     var apiUrl = '/auth/login';

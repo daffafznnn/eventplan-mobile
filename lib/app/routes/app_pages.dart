@@ -1,3 +1,4 @@
+import 'package:eventplan_mobile/app/modules/events/views/event_detail_view_view.dart';
 import 'package:get/get.dart';
 
 import '../middlewares/auth_middleware.dart';
@@ -47,6 +48,11 @@ class AppPages {
     GetPage(
       name: _Paths.EVENTS,
       page: () => const EventsView(),
+      binding: EventsBinding(),
+    ),
+     GetPage(
+      name: _Paths.EVENTS_DETAIL,
+      page: () => EventDetailView(event: Get.arguments),
       binding: EventsBinding(),
     ),
   ];

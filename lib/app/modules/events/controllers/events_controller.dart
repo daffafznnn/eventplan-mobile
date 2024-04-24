@@ -3,10 +3,13 @@ import 'package:get/get.dart';
 import 'package:eventplan_mobile/app/data/event_model.dart';
 import 'package:http/http.dart' as http;
 import '../../../providers/api.dart';
+import 'package:eventplan_mobile/app/routes/app_pages.dart';
 
 class EventsController extends GetxController {
   var eventList = <Events>[].obs;
   var isLoading = false.obs;
+
+  get currentPosition => null;
 
   @override
   void onInit() {
@@ -17,11 +20,9 @@ class EventsController extends GetxController {
   Future<void> fetchEvents() async {
     try {
       var apiUrl = '${Api.baseUrl}/events';
-      var headers = await Api.getHeaders();
 
       var response = await http.get(
         Uri.parse(apiUrl),
-        headers: headers,
       );
 
       if (response.statusCode == 200) {
@@ -30,13 +31,10 @@ class EventsController extends GetxController {
           // Jika data event kosong
           print('No events found');
         } else {
-          eventList.assignAll(
-            jsonResponse
-                .map(
-                  (model) => Events.fromJson(model as Map<String, dynamic>),
-                )
-                .toList(),
-          );
+          List<Events> events = jsonResponse
+              .map((model) => Events.fromJson(model as Map<String, dynamic>))
+              .toList();
+          eventList.assignAll(events);
         }
       } else {
         throw Exception('Failed to fetch events');
@@ -46,5 +44,10 @@ class EventsController extends GetxController {
     } finally {
       isLoading.value = false;
     }
+  }
+
+  void showDetailEvent(Events event) {
+    Get.toNamed(Routes.EVENTS_DETAIL,
+        arguments: event);
   }
 }
